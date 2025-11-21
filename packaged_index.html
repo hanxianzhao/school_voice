@@ -1,0 +1,779 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+    <title>小一班 · 污水处理厂互动流程图</title>
+    <meta name="description" content="面向小朋友的污水处理流程互动演示：从产生、管道输送、处理到排放。" />
+    <style>
+        :root {
+            /* 天空与背景 */
+            --bg-sky: #e0f7fa;
+            --bg-ground: #f1f8e9;
+
+            /* 面板颜色 */
+            --panel: #ffffff;
+            --text: #2c3e50;
+            --muted: #607d8b;
+
+            /* 流程颜色 - 更鲜艳 */
+            --primary: #039be5;
+            /* 水的主色 */
+            --primary-light: #b3e5fc;
+            --sludge: #795548;
+            /* 污泥 */
+            --sludge-light: #d7ccc8;
+
+            /* 节点背景 */
+            --node-bg: #ffffff;
+            --node-border: #0288d1;
+            --node-shadow: rgba(2, 136, 209, 0.2);
+
+            --shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+            --radius: 20px;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to bottom, var(--bg-sky) 0%, var(--bg-sky) 60%, var(--bg-ground) 60%, var(--bg-ground) 100%);
+            color: var(--text);
+            font-family: "Comic Sans MS", "Chalkboard SE", "Softbrush", sans-serif;
+            /* 尝试用一点可爱的字体，如果没有则回退 */
+        }
+
+        .app-header {
+            padding: 16px;
+            text-align: center;
+            background: rgba(255, 255, 255, 0.6);
+            backdrop-filter: blur(4px);
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .app-header h1 {
+            margin: 0;
+            font-size: 28px;
+            color: #0277bd;
+            text-shadow: 1px 1px 0 #fff;
+        }
+
+        .subtitle {
+            margin: 4px 0 0;
+            color: #546e7a;
+            font-size: 16px;
+        }
+
+        .app-main {
+            padding-top: 90px;
+            /* header height */
+            height: 100vh;
+            display: flex;
+            flex-direction: row;
+            overflow: hidden;
+        }
+
+        .sidebar {
+            width: 300px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            background: rgba(255, 255, 255, 0.8);
+            z-index: 10;
+        }
+
+        .controls {
+            display: flex;
+            gap: 12px;
+        }
+
+        .btn {
+            flex: 1;
+            border: none;
+            background: #fff;
+            color: var(--primary);
+            padding: 12px;
+            border-radius: var(--radius);
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 0 #b3e5fc;
+            transition: transform 0.1s;
+            border: 2px solid #b3e5fc;
+        }
+
+        .btn:active {
+            transform: translateY(4px);
+            box-shadow: none;
+        }
+
+        .btn.primary {
+            background: var(--primary);
+            color: #fff;
+            border-color: #0277bd;
+            box-shadow: 0 4px 0 #01579b;
+        }
+
+        .legend {
+            background: #fff;
+            padding: 16px;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+        }
+
+        .legend h3 {
+            margin: 0 0 10px;
+            font-size: 18px;
+            color: #0277bd;
+        }
+
+        .legend-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .chip {
+            width: 30px;
+            height: 12px;
+            border-radius: 6px;
+        }
+
+        .chip-water {
+            background: var(--primary);
+        }
+
+        .chip-sludge {
+            background: var(--sludge);
+        }
+
+        .chip-node {
+            background: #fff;
+            border: 2px solid var(--primary);
+        }
+
+        .info-panel {
+            flex: 1;
+            background: #fff;
+            border-radius: var(--radius);
+            padding: 20px;
+            box-shadow: var(--shadow);
+            border: 4px solid #b3e5fc;
+            position: relative;
+        }
+
+        .info-panel::before {
+            content: "💡";
+            position: absolute;
+            top: -15px;
+            left: 20px;
+            font-size: 32px;
+            background: #fff;
+            border-radius: 50%;
+            padding: 4px;
+        }
+
+        .info-panel h3 {
+            margin-top: 10px;
+            color: #0277bd;
+        }
+
+        .info-panel p {
+            line-height: 1.6;
+            font-size: 16px;
+        }
+
+        .diagram {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+            /* SVG pan/zoom if needed, but we'll fit to screen */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* SVG Styles */
+        #flowSvg {
+            width: 100%;
+            height: 100%;
+            max-width: 1400px;
+        }
+
+        .node-group {
+            cursor: pointer;
+        }
+
+        /* .node-group:hover { transform: scale(1.05); }  <-- Removed to prevent overriding SVG translate */
+
+        .node-bg {
+            fill: #fff;
+            stroke: var(--primary);
+            stroke-width: 3;
+            transition: all 0.2s ease;
+            filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.1));
+        }
+
+        /* Bouncy Animation */
+        @keyframes bounce {
+
+            0%,
+            100% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.1);
+            }
+        }
+
+        .node-group:hover .node-bg {
+            stroke: var(--primary-600);
+            stroke-width: 5;
+            filter: drop-shadow(0 8px 16px rgba(3, 155, 229, 0.3));
+            /* Bouncy effect */
+            animation: bounce 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite;
+            transform-box: fill-box;
+            transform-origin: center;
+        }
+
+        .node-bg.sludge-node {
+            stroke: var(--sludge);
+        }
+
+        /* Playful Font Override */
+        body {
+            font-family: "Comic Sans MS", "Chalkboard SE", "Softbrush", "Fredoka One", sans-serif;
+        }
+
+        .node-title {
+            font-family: "Comic Sans MS", "Chalkboard SE", sans-serif;
+            font-size: 15px;
+            fill: #01579b;
+            font-weight: bold;
+            text-anchor: middle;
+            pointer-events: none;
+        }
+
+        /* Paths */
+        .pipe-bg {
+            fill: none;
+            stroke: #cfd8dc;
+            stroke-width: 14;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        .flow-line {
+            fill: none;
+            stroke: var(--primary);
+            stroke-width: 8;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            stroke-dasharray: 15 10;
+            stroke-dashoffset: 0;
+            opacity: 0.8;
+        }
+
+        .sludge-line {
+            fill: none;
+            stroke: var(--sludge);
+            stroke-width: 8;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            stroke-dasharray: 10 10;
+        }
+
+        /* Animations */
+        @keyframes flowAnim {
+            to {
+                stroke-dashoffset: -25;
+            }
+        }
+
+        .playing .flow-line {
+            animation: flowAnim 1s linear infinite;
+        }
+
+        .playing .sludge-line {
+            animation: flowAnim 1.5s linear infinite;
+        }
+
+        .active .node-bg {
+            stroke: #ff9800;
+            stroke-width: 5;
+        }
+
+        /* Icons */
+        .icon-path {
+            fill: none;
+            stroke: #0277bd;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        .icon-fill {
+            fill: #b3e5fc;
+            stroke: none;
+        }
+
+        /* Responsive */
+        @media (max-width: 900px) {
+            .app-main {
+                flex-direction: column;
+                overflow-y: auto;
+                height: auto;
+            }
+
+            .sidebar {
+                width: 100%;
+                order: 2;
+            }
+
+            .diagram {
+                height: 600px;
+                order: 1;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <header class="app-header">
+        <h1>💧 小一班 · 污水变清流之旅 💧</h1>
+        <p class="subtitle">点一点，看污水是怎么变干净的！</p>
+    </header>
+
+    <main class="app-main">
+        <aside class="sidebar">
+            <div class="controls">
+                <button id="toggleFlow" class="btn primary">🌊 开始流动</button>
+            </div>
+            <div class="legend">
+                <h3>图例</h3>
+                <div class="legend-row"><span class="chip chip-water"></span> 水流方向</div>
+                <div class="legend-row"><span class="chip chip-node"></span> 点我试试</div>
+                <div class="legend-row"><span class="chip chip-sludge"></span> 污泥路线</div>
+            </div>
+            <div class="info-panel" id="infoPanel">
+                <h3 id="infoTitle">欢迎来到污水厂！</h3>
+                <p id="infoText">这里是处理脏水的地方。点击图上的小房子或池子，看看它们是做什么的吧！</p>
+            </div>
+        </aside>
+
+        <section class="diagram">
+            <!-- 新的布局：1200x800 -->
+            <svg id="flowSvg" viewBox="0 0 1200 800" role="img" aria-label="污水处理流程图">
+                <defs>
+                    <!-- 箭头 -->
+                    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6"
+                        orient="auto">
+                        <path d="M 0 0 L 10 5 L 0 10 z" fill="#039be5" />
+                    </marker>
+                    <marker id="arrow-sludge" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6"
+                        orient="auto">
+                        <path d="M 0 0 L 10 5 L 0 10 z" fill="#795548" />
+                    </marker>
+
+                    <!-- 通用脸部 (Kawaii Face) -->
+                    <symbol id="face-happy" viewBox="0 0 20 10">
+                        <circle cx="4" cy="4" r="2" fill="#333" />
+                        <circle cx="16" cy="4" r="2" fill="#333" />
+                        <path d="M6 7 Q10 10 14 7" fill="none" stroke="#333" stroke-width="1.5"
+                            stroke-linecap="round" />
+                    </symbol>
+
+                    <!-- 新增生活来源图标 -->
+                    <symbol id="icon-toilet" viewBox="0 0 64 64">
+                        <path d="M16 24 H48 V44 C48 54 40 60 32 60 C24 60 16 54 16 44 V24 Z" class="icon-fill" />
+                        <rect x="16" y="10" width="32" height="14" rx="2" class="icon-fill" />
+                        <path d="M16 24 H48" class="icon-path" />
+                        <use href="#face-happy" x="22" y="35" width="20" height="10" />
+                    </symbol>
+
+                    <symbol id="icon-shower" viewBox="0 0 64 64">
+                        <path d="M10 50 L20 10 L40 10 L44 20" class="icon-path" fill="none" />
+                        <path d="M36 20 L52 20 L44 10 Z" class="icon-fill" />
+                        <!-- 水滴 -->
+                        <circle cx="38" cy="30" r="2" fill="#039be5" />
+                        <circle cx="44" cy="36" r="2" fill="#039be5" />
+                        <circle cx="50" cy="30" r="2" fill="#039be5" />
+                    </symbol>
+
+                    <symbol id="icon-washer" viewBox="0 0 64 64">
+                        <rect x="12" y="10" width="40" height="48" rx="4" class="icon-fill" />
+                        <circle cx="32" cy="34" r="14" fill="#fff" stroke="#0277bd" stroke-width="2" />
+                        <path d="M28 34 Q32 38 36 34" fill="none" stroke="#039be5" stroke-width="2" />
+                        <circle cx="44" cy="18" r="2" fill="#0277bd" />
+                        <circle cx="38" cy="18" r="2" fill="#0277bd" />
+                    </symbol>
+
+                    <symbol id="icon-sink" viewBox="0 0 64 64">
+                        <path d="M8 32 H56 V44 C56 52 48 56 32 56 C16 56 8 52 8 44 V32 Z" class="icon-fill" />
+                        <path d="M48 32 V20 H32 V24" class="icon-path" fill="none" />
+                        <path d="M28 24 H36 L32 30 Z" fill="#0277bd" />
+                        <use href="#face-happy" x="22" y="40" width="20" height="10" />
+                    </symbol>
+
+                    <!-- 图标定义 -->
+                    <symbol id="icon-house" viewBox="0 0 64 64">
+                        <path d="M8 32 L32 10 L56 32 V54 H8 V32 Z" class="icon-fill" />
+                        <path d="M8 32 L32 10 L56 32" class="icon-path" />
+                        <rect x="24" y="36" width="16" height="18" class="icon-path" fill="#fff" />
+                        <!-- 烟囱 -->
+                        <rect x="42" y="16" width="8" height="12" fill="#90a4ae" />
+                    </symbol>
+
+                    <symbol id="icon-pipe" viewBox="0 0 64 64">
+                        <rect x="4" y="20" width="56" height="24" rx="12" class="icon-fill" />
+                        <path d="M10 32 H54" class="icon-path" stroke-dasharray="4 4" />
+                    </symbol>
+                    <symbol id="icon-pump" viewBox="0 0 64 64">
+                        <circle cx="32" cy="32" r="22" class="icon-fill" />
+                        <path d="M32 10 V54 M10 32 H54" class="icon-path" />
+                        <circle cx="32" cy="32" r="18" fill="#fff" opacity="0.3" />
+                        <use href="#face-happy" x="22" y="28" width="20" height="10" />
+                    </symbol>
+
+                    <symbol id="icon-grid" viewBox="0 0 64 64">
+                        <rect x="12" y="12" width="40" height="40" rx="4" class="icon-fill" />
+                        <path d="M20 12 V52 M32 12 V52 M44 12 V52" class="icon-path" />
+                        <use href="#face-happy" x="22" y="20" width="20" height="10" />
+                    </symbol>
+
+                    <symbol id="icon-tank" viewBox="0 0 64 64">
+                        <path d="M4 20 H60 V44 C60 54 50 60 32 60 C14 60 4 54 4 44 V20 Z" class="icon-fill" />
+                        <path d="M4 20 H60" class="icon-path" />
+                        <use href="#face-happy" x="22" y="35" width="20" height="10" />
+                    </symbol>
+
+                    <symbol id="icon-bubbles" viewBox="0 0 64 64">
+                        <path d="M4 20 H60 V44 C60 54 50 60 32 60 C14 60 4 54 4 44 V20 Z" class="icon-fill" />
+                        <circle cx="16" cy="36" r="4" fill="#fff" opacity="0.8" />
+                        <circle cx="32" cy="42" r="6" fill="#fff" opacity="0.8" />
+                        <circle cx="48" cy="34" r="4" fill="#fff" opacity="0.8" />
+                        <use href="#face-happy" x="22" y="25" width="20" height="10" />
+                    </symbol>
+
+                    <symbol id="icon-disinfect" viewBox="0 0 64 64">
+                        <rect x="10" y="16" width="44" height="36" rx="8" class="icon-fill" />
+                        <path d="M32 22 V46 M20 34 H44" class="icon-path" stroke="#fff" stroke-width="4" />
+                        <use href="#face-happy" x="22" y="20" width="20" height="10" />
+                    </symbol>
+
+                    <symbol id="icon-river" viewBox="0 0 64 64">
+                        <path d="M4 32 Q16 16 32 32 T60 32" class="icon-path" />
+                        <path d="M4 42 Q16 26 32 42 T60 42" class="icon-path" />
+                        <circle cx="50" cy="20" r="2" fill="#ff9800" />
+                        <!-- 小鱼眼 -->
+                        <path d="M44 20 L54 20 L54 26 Z" fill="#ff9800" />
+                        <!-- 小鱼 -->
+                    </symbol>
+
+                    <symbol id="icon-sludge" viewBox="0 0 64 64">
+                        <path d="M12 48 Q32 32 52 48 V56 H12 Z" fill="#8d6e63" />
+                        <rect x="16" y="20" width="32" height="28" class="icon-path" fill="#d7ccc8" />
+                        <use href="#face-happy" x="22" y="30" width="20" height="10" />
+                    </symbol>
+                </defs>
+
+                <!-- 区域背景框 (更圆润，颜色更柔和) -->
+                <!-- Source Zone: y=20, h=220 (was 180) -->
+                <rect x="20" y="20" width="1160" height="220" fill="rgba(255,255,255,0.4)" rx="30" stroke="#b3e5fc"
+                    stroke-width="2" stroke-dasharray="10 10" />
+                <text x="50" y="60" fill="#0277bd" font-size="24" font-weight="bold"
+                    style="font-family: 'Comic Sans MS', cursive;">🏡 我们的家 (来源)</text>
+
+                <!-- Treatment Zone: y=260 (was 220), h=360 -->
+                <rect x="20" y="260" width="1160" height="360" fill="rgba(255,255,255,0.6)" rx="30" stroke="#81d4fa"
+                    stroke-width="2" stroke-dasharray="10 10" />
+                <text x="50" y="300" fill="#0277bd" font-size="24" font-weight="bold"
+                    style="font-family: 'Comic Sans MS', cursive;">⚙️ 污水变身工厂 (处理)</text>
+
+                <!-- Discharge Zone: y=640 (was 600), h=180 -->
+                <rect x="20" y="640" width="1160" height="180" fill="rgba(255,255,255,0.4)" rx="30" stroke="#4fc3f7"
+                    stroke-width="2" stroke-dasharray="10 10" />
+                <text x="50" y="680" fill="#0277bd" font-size="24" font-weight="bold"
+                    style="font-family: 'Comic Sans MS', cursive;">🌊 回归大自然 (排放)</text>
+
+                <!-- 背景装饰：天空与草地 (移到这里，位于背景框之上) -->
+                <!-- 太阳 -->
+                <g transform="translate(1050, 80)">
+                    <circle r="40" fill="#ffd54f" />
+                    <circle r="40" fill="none" stroke="#ffb300" stroke-width="4" stroke-dasharray="10 10" opacity="0.5">
+                        <animateTransform attributeName="transform" type="rotate" from="0" to="360" dur="20s"
+                            repeatCount="indefinite" />
+                    </circle>
+                    <!-- 太阳笑脸 -->
+                    <circle cx="-12" cy="-5" r="4" fill="#333" />
+                    <circle cx="12" cy="-5" r="4" fill="#333" />
+                    <path d="M-10 10 Q0 20 10 10" fill="none" stroke="#333" stroke-width="3" stroke-linecap="round" />
+                </g>
+
+                <!-- 云朵 -->
+                <g opacity="0.8">
+                    <path d="M100 100 Q120 80 140 100 T180 100 T200 120 H100 Z" fill="#fff" />
+                    <animateTransform attributeName="transform" type="translate" values="0 0; 20 0; 0 0" dur="8s"
+                        repeatCount="indefinite" />
+                </g>
+                <g opacity="0.6" transform="translate(400, -20)">
+                    <path d="M100 100 Q120 80 140 100 T180 100 T200 120 H100 Z" fill="#fff" />
+                    <animateTransform attributeName="transform" type="translate" values="0 0; -30 0; 0 0" dur="12s"
+                        repeatCount="indefinite" />
+                </g>
+
+
+                <!-- 连线 (Pipes) -->
+                <!-- 1. Sources -> Collector Pipe -> Pump -->
+
+                <!-- 竖向连接管 (从节点底部 y=180 到 汇集管 y=210) -->
+                <path d="M250 180 L250 210" class="pipe-bg" /> <!-- Sink -->
+                <path d="M250 180 L250 210" class="flow-line" />
+
+                <path d="M500 180 L500 210" class="pipe-bg" /> <!-- Toilet -->
+                <path d="M500 180 L500 210" class="flow-line" />
+
+                <path d="M750 180 L750 210" class="pipe-bg" /> <!-- Shower -->
+                <path d="M750 180 L750 210" class="flow-line" />
+
+                <path d="M1000 180 L1000 210" class="pipe-bg" /> <!-- Washer -->
+                <path d="M1000 180 L1000 210" class="flow-line" />
+
+                <!-- 汇集管：分为两段汇聚到中间 (y=210) -->
+                <!-- 左边段 -->
+                <path d="M250 210 L350 210" class="pipe-bg" />
+                <path d="M250 210 L350 210" class="flow-line" />
+
+                <!-- 右边段 -->
+                <path d="M1000 210 L350 210" class="pipe-bg" />
+                <path d="M1000 210 L350 210" class="flow-line" />
+
+                <!-- 汇集后流向泵站 (x=350, Pump Top y=340) -->
+                <path d="M350 210 L350 340" class="pipe-bg" />
+                <path d="M350 210 L350 340" class="flow-line" />
+
+
+                <!-- 2. Pump -> Grid (y=380) -->
+                <path d="M400 380 L450 380" class="pipe-bg" />
+                <path d="M400 380 L450 380" class="flow-line" />
+
+                <!-- 3. Grid -> Primary -->
+                <path d="M550 380 L600 380" class="pipe-bg" />
+                <path d="M550 380 L600 380" class="flow-line" />
+
+                <!-- 4. Primary -> Aeration -->
+                <path d="M700 380 L750 380" class="pipe-bg" />
+                <path d="M700 380 L750 380" class="flow-line" />
+
+                <!-- 5. Aeration -> Secondary -->
+                <path d="M850 380 L900 380" class="pipe-bg" />
+                <path d="M850 380 L900 380" class="flow-line" />
+
+                <!-- 6. Secondary -> Disinfect (Row 2 y=480) -->
+                <path d="M1000 380 L1040 380 L1040 480 L1000 480" class="pipe-bg" />
+                <path d="M1000 380 L1040 380 L1040 480 L1000 480" class="flow-line" />
+
+                <!-- 7. Disinfect -> River (y=700) -->
+                <path d="M900 480 L500 480 L500 700" class="pipe-bg" />
+                <path d="M900 480 L500 480 L500 700" class="flow-line" marker-end="url(#arrow)" />
+
+                <!-- 8. Sludge: Secondary -> Sludge Tank (y=700) -->
+                <path d="M950 430 L950 700" class="pipe-bg" style="stroke: #d7ccc8;" />
+                <path d="M950 430 L950 700" class="sludge-line" marker-end="url(#arrow-sludge)" />
+
+
+                <!-- 节点 (Nodes) -->
+
+                <!-- Sources (4个) - y=100 -->
+                <g class="node-group step" id="src-sink" transform="translate(200, 100)" data-title="洗手/洗菜"
+                    data-text="洗手、洗菜、洗碗的水，虽然看起来不脏，但也需要处理哦。">
+                    <rect x="0" y="0" width="100" height="80" rx="20" class="node-bg" />
+                    <use href="#icon-sink" x="18" y="8" width="64" height="64" />
+                    <text x="50" y="95" class="node-title">洗手/洗菜</text>
+                </g>
+
+                <g class="node-group step" id="src-toilet" transform="translate(450, 100)" data-title="马桶冲水"
+                    data-text="冲马桶的水里有很多细菌和脏东西，一定要好好处理！">
+                    <rect x="0" y="0" width="100" height="80" rx="20" class="node-bg" />
+                    <use href="#icon-toilet" x="18" y="8" width="64" height="64" />
+                    <text x="50" y="95" class="node-title">马桶</text>
+                </g>
+
+                <g class="node-group step" id="src-shower" transform="translate(700, 100)" data-title="洗澡水"
+                    data-text="洗澡用了很多沐浴露和香皂，这些泡泡水也要去污水厂。">
+                    <rect x="0" y="0" width="100" height="80" rx="20" class="node-bg" />
+                    <use href="#icon-shower" x="18" y="8" width="64" height="64" />
+                    <text x="50" y="95" class="node-title">洗澡</text>
+                </g>
+
+                <g class="node-group step" id="src-washer" transform="translate(950, 100)" data-title="洗衣机"
+                    data-text="洗衣服的水里有洗衣液和衣服上的灰尘。">
+                    <rect x="0" y="0" width="100" height="80" rx="20" class="node-bg" />
+                    <use href="#icon-washer" x="18" y="8" width="64" height="64" />
+                    <text x="50" y="95" class="node-title">洗衣机</text>
+                </g>
+
+                <!-- Pump - y=340 -->
+                <g class="node-group step" id="pump" transform="translate(300, 340)" data-title="提升泵站"
+                    data-text="泵站像大力士，把低处的污水抽到高处，让它能流进处理厂。">
+                    <rect x="0" y="0" width="100" height="80" rx="20" class="node-bg" />
+                    <use href="#icon-pump" x="18" y="8" width="64" height="64" />
+                    <text x="50" y="95" class="node-title">提升泵站</text>
+                </g>
+
+                <!-- Grid -->
+                <g class="node-group step" id="pretreat" transform="translate(450, 340)" data-title="格栅与沉砂"
+                    data-text="像筛子一样，把大垃圾和沙石头拦住，保护后面的设备。">
+                    <rect x="0" y="0" width="100" height="80" rx="20" class="node-bg" />
+                    <use href="#icon-grid" x="18" y="8" width="64" height="64" />
+                    <text x="50" y="95" class="node-title">格栅沉砂</text>
+                </g>
+
+                <!-- Primary -->
+                <g class="node-group step" id="primary" transform="translate(600, 340)" data-title="初沉池"
+                    data-text="让水静静地休息一会儿，重一点的脏东西就会沉到水底。">
+                    <rect x="0" y="0" width="100" height="80" rx="20" class="node-bg" />
+                    <use href="#icon-tank" x="18" y="8" width="64" height="64" />
+                    <text x="50" y="95" class="node-title">初沉池</text>
+                </g>
+
+                <!-- Aeration -->
+                <g class="node-group step" id="aeration" transform="translate(750, 340)" data-title="曝气池"
+                    data-text="这里有很多微生物宝宝，给它们吹吹氧气，它们就会吃掉水里的脏东西！">
+                    <rect x="0" y="0" width="100" height="80" rx="20" class="node-bg" />
+                    <use href="#icon-bubbles" x="18" y="8" width="64" height="64" />
+                    <text x="50" y="95" class="node-title">曝气池</text>
+                </g>
+
+                <!-- Secondary -->
+                <g class="node-group step" id="secondary" transform="translate(900, 340)" data-title="二沉池"
+                    data-text="微生物吃饱了，在这里和水分开。干净水在上面，泥巴在下面。">
+                    <rect x="0" y="0" width="100" height="80" rx="20" class="node-bg" />
+                    <use href="#icon-tank" x="18" y="8" width="64" height="64" />
+                    <text x="50" y="95" class="node-title">二沉池</text>
+                </g>
+
+                <!-- Disinfect - y=440 -->
+                <g class="node-group step" id="disinfect" transform="translate(900, 440)" data-title="消毒池"
+                    data-text="加一点消毒水，把剩下的坏细菌消灭掉，水就变干净啦！">
+                    <rect x="0" y="0" width="100" height="80" rx="20" class="node-bg" />
+                    <use href="#icon-disinfect" x="18" y="8" width="64" height="64" />
+                    <text x="50" y="95" class="node-title">消毒池</text>
+                </g>
+
+                <!-- River - y=700 -->
+                <g class="node-group step" id="outfall" transform="translate(420, 700)" data-title="清水排放"
+                    data-text="处理好的干净水，终于可以回到小河里，鱼儿们好开心！">
+                    <rect x="0" y="0" width="160" height="80" rx="40" class="node-bg" style="stroke: #4caf50;" />
+                    <use href="#icon-river" x="48" y="8" width="64" height="64" />
+                    <text x="80" y="45" class="node-title" style="fill: #2e7d32;">回到小河</text>
+                </g>
+
+                <!-- Sludge - y=700 -->
+                <g class="node-group step" id="sludge" transform="translate(850, 700)" data-title="污泥处理"
+                    data-text="沉下来的泥巴被挤干水分，变成泥饼，运走做肥料或者填埋。">
+                    <rect x="0" y="0" width="160" height="80" rx="40" class="node-bg sludge-node" />
+                    <use href="#icon-sludge" x="48" y="8" width="64" height="64" />
+                    <text x="80" y="45" class="node-title" style="fill: #5d4037;">污泥处理</text>
+                </g>
+
+            </svg>
+        </section>
+    </main>
+
+    <script>
+        (() => {
+            const $ = (sel, ctx = document) => ctx.querySelector(sel);
+            const $$ = (sel, ctx = document) => Array.from(ctx.querySelectorAll(sel));
+
+            const flowPaths = $$(".flow-line");
+            const sludgePaths = $$(".sludge-line");
+            const nodes = $$(".node-group");
+            const infoTitle = $("#infoTitle");
+            const infoText = $("#infoText");
+            const btnToggle = $("#toggleFlow");
+            const btnReplay = $("#replayFlow");
+
+            let playing = false;
+
+            function setPlaying(next) {
+                playing = next;
+                document.body.classList.toggle("playing", playing);
+                btnToggle.textContent = playing ? "⏸ 暂停流动" : "🌊 开始流动";
+            }
+
+            function replay() {
+                // 重置动画
+                const allPaths = flowPaths.concat(sludgePaths);
+                allPaths.forEach(p => {
+                    p.style.animation = "none";
+                    // 触发回流
+                    // eslint-disable-next-line no-unused-expressions
+                    p.offsetHeight;
+                    p.style.animation = "";
+                });
+
+                if (!playing) {
+                    setPlaying(true);
+                }
+            }
+
+            function clearActive() {
+                nodes.forEach(n => n.classList.remove("active"));
+            }
+
+            function showInfoFromNode(el) {
+                const title = el.getAttribute("data-title") || "流程节点";
+                const text = el.getAttribute("data-text") || "";
+                infoTitle.textContent = title;
+                infoText.textContent = text;
+            }
+
+            // 绑定事件：节点点击
+            nodes.forEach(node => {
+                node.addEventListener("click", () => {
+                    clearActive();
+                    node.classList.add("active");
+                    showInfoFromNode(node);
+                });
+                node.addEventListener("keydown", (e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        node.click();
+                    }
+                });
+                node.setAttribute("tabindex", "0");
+                node.setAttribute("role", "button");
+                node.setAttribute("aria-label", node.getAttribute("data-title") || "流程节点");
+            });
+
+            // 控制按钮
+            btnToggle.addEventListener("click", () => setPlaying(!playing));
+
+            // 初始提示
+            const first = $("#source");
+            if (first) {
+                first.classList.add("active");
+                showInfoFromNode(first);
+            }
+        })();
+    </script>
+</body>
+
+</html>

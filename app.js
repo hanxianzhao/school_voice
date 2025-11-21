@@ -65,7 +65,6 @@
 
   // 控制按钮
   btnToggle.addEventListener("click", () => setPlaying(!playing));
-  btnReplay.addEventListener("click", replay);
 
   // 初始提示
   const first = $("#source");

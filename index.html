@@ -4,14 +4,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
-  <title>小小班 · 污水处理厂互动流程图</title>
+  <title>小一班 · 污水处理厂互动流程图</title>
   <meta name="description" content="面向小朋友的污水处理流程互动演示：从产生、管道输送、处理到排放。" />
   <link rel="stylesheet" href="./styles.css" />
 </head>
 
 <body>
   <header class="app-header">
-    <h1>💧 小小班 · 污水变清流之旅 💧</h1>
+    <h1>💧 小一班 · 污水变清流之旅 💧</h1>
     <p class="subtitle">点一点，看污水是怎么变干净的！</p>
   </header>
 
@@ -19,7 +19,6 @@
     <aside class="sidebar">
       <div class="controls">
         <button id="toggleFlow" class="btn primary">🌊 开始流动</button>
-        <button id="replayFlow" class="btn">🔄 重播</button>
       </div>
       <div class="legend">
         <h3>图例</h3>
@@ -51,6 +50,38 @@
             <circle cx="4" cy="4" r="2" fill="#333" />
             <circle cx="16" cy="4" r="2" fill="#333" />
             <path d="M6 7 Q10 10 14 7" fill="none" stroke="#333" stroke-width="1.5" stroke-linecap="round" />
+          </symbol>
+
+          <!-- 新增生活来源图标 -->
+          <symbol id="icon-toilet" viewBox="0 0 64 64">
+            <path d="M16 24 H48 V44 C48 54 40 60 32 60 C24 60 16 54 16 44 V24 Z" class="icon-fill" />
+            <rect x="16" y="10" width="32" height="14" rx="2" class="icon-fill" />
+            <path d="M16 24 H48" class="icon-path" />
+            <use href="#face-happy" x="22" y="35" width="20" height="10" />
+          </symbol>
+
+          <symbol id="icon-shower" viewBox="0 0 64 64">
+            <path d="M10 50 L20 10 L40 10 L44 20" class="icon-path" fill="none" />
+            <path d="M36 20 L52 20 L44 10 Z" class="icon-fill" />
+            <!-- 水滴 -->
+            <circle cx="38" cy="30" r="2" fill="#039be5" />
+            <circle cx="44" cy="36" r="2" fill="#039be5" />
+            <circle cx="50" cy="30" r="2" fill="#039be5" />
+          </symbol>
+
+          <symbol id="icon-washer" viewBox="0 0 64 64">
+            <rect x="12" y="10" width="40" height="48" rx="4" class="icon-fill" />
+            <circle cx="32" cy="34" r="14" fill="#fff" stroke="#0277bd" stroke-width="2" />
+            <path d="M28 34 Q32 38 36 34" fill="none" stroke="#039be5" stroke-width="2" />
+            <circle cx="44" cy="18" r="2" fill="#0277bd" />
+            <circle cx="38" cy="18" r="2" fill="#0277bd" />
+          </symbol>
+
+          <symbol id="icon-sink" viewBox="0 0 64 64">
+            <path d="M8 32 H56 V44 C56 52 48 56 32 56 C16 56 8 52 8 44 V32 Z" class="icon-fill" />
+            <path d="M48 32 V20 H32 V24" class="icon-path" fill="none" />
+            <path d="M28 24 H36 L32 30 Z" fill="#0277bd" />
+            <use href="#face-happy" x="22" y="40" width="20" height="10" />
           </symbol>
 
           <!-- 图标定义 -->
@@ -115,7 +146,26 @@
           </symbol>
         </defs>
 
-        <!-- 背景装饰：天空与草地 -->
+        <!-- 区域背景框 (更圆润，颜色更柔和) -->
+        <!-- Source Zone: y=20, h=220 (was 180) -->
+        <rect x="20" y="20" width="1160" height="220" fill="rgba(255,255,255,0.4)" rx="30" stroke="#b3e5fc"
+          stroke-width="2" stroke-dasharray="10 10" />
+        <text x="50" y="60" fill="#0277bd" font-size="24" font-weight="bold"
+          style="font-family: 'Comic Sans MS', cursive;">🏡 我们的家 (来源)</text>
+
+        <!-- Treatment Zone: y=260 (was 220), h=360 -->
+        <rect x="20" y="260" width="1160" height="360" fill="rgba(255,255,255,0.6)" rx="30" stroke="#81d4fa"
+          stroke-width="2" stroke-dasharray="10 10" />
+        <text x="50" y="300" fill="#0277bd" font-size="24" font-weight="bold"
+          style="font-family: 'Comic Sans MS', cursive;">⚙️ 污水变身工厂 (处理)</text>
+
+        <!-- Discharge Zone: y=640 (was 600), h=180 -->
+        <rect x="20" y="640" width="1160" height="180" fill="rgba(255,255,255,0.4)" rx="30" stroke="#4fc3f7"
+          stroke-width="2" stroke-dasharray="10 10" />
+        <text x="50" y="680" fill="#0277bd" font-size="24" font-weight="bold"
+          style="font-family: 'Comic Sans MS', cursive;">🌊 回归大自然 (排放)</text>
+
+        <!-- 背景装饰：天空与草地 (移到这里，位于背景框之上) -->
         <!-- 太阳 -->
         <g transform="translate(1050, 80)">
           <circle r="40" fill="#ffd54f" />
@@ -141,69 +191,99 @@
             repeatCount="indefinite" />
         </g>
 
-        <!-- 区域背景框 (更圆润，颜色更柔和) -->
-        <rect x="20" y="20" width="1160" height="180" fill="rgba(255,255,255,0.4)" rx="30" stroke="#b3e5fc"
-          stroke-width="2" stroke-dasharray="10 10" />
-        <text x="80" y="60" fill="#0277bd" font-size="24" font-weight="bold"
-          style="font-family: 'Comic Sans MS', cursive;">🏡 我们的家 (来源)</text>
-
-        <rect x="20" y="220" width="1160" height="360" fill="rgba(255,255,255,0.6)" rx="30" stroke="#81d4fa"
-          stroke-width="2" stroke-dasharray="10 10" />
-        <text x="80" y="260" fill="#0277bd" font-size="24" font-weight="bold"
-          style="font-family: 'Comic Sans MS', cursive;">⚙️ 污水变身工厂 (处理)</text>
-
-        <rect x="20" y="600" width="1160" height="180" fill="rgba(255,255,255,0.4)" rx="30" stroke="#4fc3f7"
-          stroke-width="2" stroke-dasharray="10 10" />
-        <text x="80" y="640" fill="#0277bd" font-size="24" font-weight="bold"
-          style="font-family: 'Comic Sans MS', cursive;">🌊 回归大自然 (排放)</text>
-
 
         <!-- 连线 (Pipes) -->
-        <!-- 1. Source -> Pipe -> Pump -->
-        <path d="M180 140 L180 280 L240 280" class="pipe-bg" />
-        <path d="M180 140 L180 280 L240 280" class="flow-line" />
+        <!-- 1. Sources -> Collector Pipe -> Pump -->
 
-        <!-- 2. Pump -> Grid -->
-        <path d="M340 280 L400 280" class="pipe-bg" />
-        <path d="M340 280 L400 280" class="flow-line" />
+        <!-- 竖向连接管 (从节点底部 y=180 到 汇集管 y=210) -->
+        <path d="M250 180 L250 210" class="pipe-bg" /> <!-- Sink -->
+        <path d="M250 180 L250 210" class="flow-line" />
+
+        <path d="M500 180 L500 210" class="pipe-bg" /> <!-- Toilet -->
+        <path d="M500 180 L500 210" class="flow-line" />
+
+        <path d="M750 180 L750 210" class="pipe-bg" /> <!-- Shower -->
+        <path d="M750 180 L750 210" class="flow-line" />
+
+        <path d="M1000 180 L1000 210" class="pipe-bg" /> <!-- Washer -->
+        <path d="M1000 180 L1000 210" class="flow-line" />
+
+        <!-- 汇集管：分为两段汇聚到中间 (y=210) -->
+        <!-- 左边段 -->
+        <path d="M250 210 L350 210" class="pipe-bg" />
+        <path d="M250 210 L350 210" class="flow-line" />
+
+        <!-- 右边段 -->
+        <path d="M1000 210 L350 210" class="pipe-bg" />
+        <path d="M1000 210 L350 210" class="flow-line" />
+
+        <!-- 汇集后流向泵站 (x=350, Pump Top y=340) -->
+        <path d="M350 210 L350 340" class="pipe-bg" />
+        <path d="M350 210 L350 340" class="flow-line" />
+
+
+        <!-- 2. Pump -> Grid (y=380) -->
+        <path d="M400 380 L450 380" class="pipe-bg" />
+        <path d="M400 380 L450 380" class="flow-line" />
 
         <!-- 3. Grid -> Primary -->
-        <path d="M500 280 L560 280" class="pipe-bg" />
-        <path d="M500 280 L560 280" class="flow-line" />
+        <path d="M550 380 L600 380" class="pipe-bg" />
+        <path d="M550 380 L600 380" class="flow-line" />
 
         <!-- 4. Primary -> Aeration -->
-        <path d="M660 280 L720 280" class="pipe-bg" />
-        <path d="M660 280 L720 280" class="flow-line" />
+        <path d="M700 380 L750 380" class="pipe-bg" />
+        <path d="M700 380 L750 380" class="flow-line" />
 
         <!-- 5. Aeration -> Secondary -->
-        <path d="M820 280 L880 280" class="pipe-bg" />
-        <path d="M820 280 L880 280" class="flow-line" />
+        <path d="M850 380 L900 380" class="pipe-bg" />
+        <path d="M850 380 L900 380" class="flow-line" />
 
-        <!-- 6. Secondary -> Disinfect -->
-        <path d="M980 280 L1040 280 L1040 380 L980 380" class="pipe-bg" />
-        <path d="M980 280 L1040 280 L1040 380 L980 380" class="flow-line" />
+        <!-- 6. Secondary -> Disinfect (Row 2 y=480) -->
+        <path d="M1000 380 L1040 380 L1040 480 L1000 480" class="pipe-bg" />
+        <path d="M1000 380 L1040 380 L1040 480 L1000 480" class="flow-line" />
 
-        <!-- 7. Disinfect -> River -->
-        <path d="M880 380 L500 380 L500 640" class="pipe-bg" />
-        <path d="M880 380 L500 380 L500 640" class="flow-line" marker-end="url(#arrow)" />
+        <!-- 7. Disinfect -> River (y=700) -->
+        <path d="M900 480 L500 480 L500 700" class="pipe-bg" />
+        <path d="M900 480 L500 480 L500 700" class="flow-line" marker-end="url(#arrow)" />
 
-        <!-- 8. Sludge: Secondary -> Sludge Tank -->
-        <path d="M930 330 L930 640" class="pipe-bg" style="stroke: #d7ccc8;" />
-        <path d="M930 330 L930 640" class="sludge-line" marker-end="url(#arrow-sludge)" />
+        <!-- 8. Sludge: Secondary -> Sludge Tank (y=700) -->
+        <path d="M950 430 L950 700" class="pipe-bg" style="stroke: #d7ccc8;" />
+        <path d="M950 430 L950 700" class="sludge-line" marker-end="url(#arrow-sludge)" />
 
 
         <!-- 节点 (Nodes) -->
 
-        <!-- Source -->
-        <g class="node-group step" id="source" transform="translate(100, 60)" data-title="污水从哪里来？"
-          data-text="在家里洗澡、洗衣服、冲厕所，都会产生脏脏的污水哦。">
-          <rect x="0" y="0" width="160" height="80" rx="40" class="node-bg" />
-          <use href="#icon-house" x="20" y="8" width="64" height="64" />
-          <text x="100" y="45" class="node-title">家 / 学校</text>
+        <!-- Sources (4个) - y=100 -->
+        <g class="node-group step" id="src-sink" transform="translate(200, 100)" data-title="洗手/洗菜"
+          data-text="洗手、洗菜、洗碗的水，虽然看起来不脏，但也需要处理哦。">
+          <rect x="0" y="0" width="100" height="80" rx="20" class="node-bg" />
+          <use href="#icon-sink" x="18" y="8" width="64" height="64" />
+          <text x="50" y="95" class="node-title">洗手/洗菜</text>
         </g>
 
-        <!-- Pump -->
-        <g class="node-group step" id="pump" transform="translate(240, 240)" data-title="提升泵站"
+        <g class="node-group step" id="src-toilet" transform="translate(450, 100)" data-title="马桶冲水"
+          data-text="冲马桶的水里有很多细菌和脏东西，一定要好好处理！">
+          <rect x="0" y="0" width="100" height="80" rx="20" class="node-bg" />
+          <use href="#icon-toilet" x="18" y="8" width="64" height="64" />
+          <text x="50" y="95" class="node-title">马桶</text>
+        </g>
+
+        <g class="node-group step" id="src-shower" transform="translate(700, 100)" data-title="洗澡水"
+          data-text="洗澡用了很多沐浴露和香皂，这些泡泡水也要去污水厂。">
+          <rect x="0" y="0" width="100" height="80" rx="20" class="node-bg" />
+          <use href="#icon-shower" x="18" y="8" width="64" height="64" />
+          <text x="50" y="95" class="node-title">洗澡</text>
+        </g>
+
+        <g class="node-group step" id="src-washer" transform="translate(950, 100)" data-title="洗衣机"
+          data-text="洗衣服的水里有洗衣液和衣服上的灰尘。">
+          <rect x="0" y="0" width="100" height="80" rx="20" class="node-bg" />
+          <use href="#icon-washer" x="18" y="8" width="64" height="64" />
+          <text x="50" y="95" class="node-title">洗衣机</text>
+        </g>
+
+        <!-- Pump - y=340 -->
+        <g class="node-group step" id="pump" transform="translate(300, 340)" data-title="提升泵站"
           data-text="泵站像大力士，把低处的污水抽到高处，让它能流进处理厂。">
           <rect x="0" y="0" width="100" height="80" rx="20" class="node-bg" />
           <use href="#icon-pump" x="18" y="8" width="64" height="64" />
@@ -211,7 +291,7 @@
         </g>
 
         <!-- Grid -->
-        <g class="node-group step" id="pretreat" transform="translate(400, 240)" data-title="格栅与沉砂"
+        <g class="node-group step" id="pretreat" transform="translate(450, 340)" data-title="格栅与沉砂"
           data-text="像筛子一样，把大垃圾和沙石头拦住，保护后面的设备。">
           <rect x="0" y="0" width="100" height="80" rx="20" class="node-bg" />
           <use href="#icon-grid" x="18" y="8" width="64" height="64" />
@@ -219,7 +299,7 @@
         </g>
 
         <!-- Primary -->
-        <g class="node-group step" id="primary" transform="translate(560, 240)" data-title="初沉池"
+        <g class="node-group step" id="primary" transform="translate(600, 340)" data-title="初沉池"
           data-text="让水静静地休息一会儿，重一点的脏东西就会沉到水底。">
           <rect x="0" y="0" width="100" height="80" rx="20" class="node-bg" />
           <use href="#icon-tank" x="18" y="8" width="64" height="64" />
@@ -227,7 +307,7 @@
         </g>
 
         <!-- Aeration -->
-        <g class="node-group step" id="aeration" transform="translate(720, 240)" data-title="曝气池"
+        <g class="node-group step" id="aeration" transform="translate(750, 340)" data-title="曝气池"
           data-text="这里有很多微生物宝宝，给它们吹吹氧气，它们就会吃掉水里的脏东西！">
           <rect x="0" y="0" width="100" height="80" rx="20" class="node-bg" />
           <use href="#icon-bubbles" x="18" y="8" width="64" height="64" />
@@ -235,31 +315,31 @@
         </g>
 
         <!-- Secondary -->
-        <g class="node-group step" id="secondary" transform="translate(880, 240)" data-title="二沉池"
+        <g class="node-group step" id="secondary" transform="translate(900, 340)" data-title="二沉池"
           data-text="微生物吃饱了，在这里和水分开。干净水在上面，泥巴在下面。">
           <rect x="0" y="0" width="100" height="80" rx="20" class="node-bg" />
           <use href="#icon-tank" x="18" y="8" width="64" height="64" />
           <text x="50" y="95" class="node-title">二沉池</text>
         </g>
 
-        <!-- Disinfect -->
-        <g class="node-group step" id="disinfect" transform="translate(880, 340)" data-title="消毒池"
+        <!-- Disinfect - y=440 -->
+        <g class="node-group step" id="disinfect" transform="translate(900, 440)" data-title="消毒池"
           data-text="加一点消毒水，把剩下的坏细菌消灭掉，水就变干净啦！">
           <rect x="0" y="0" width="100" height="80" rx="20" class="node-bg" />
           <use href="#icon-disinfect" x="18" y="8" width="64" height="64" />
           <text x="50" y="95" class="node-title">消毒池</text>
         </g>
 
-        <!-- River -->
-        <g class="node-group step" id="outfall" transform="translate(420, 640)" data-title="清水排放"
+        <!-- River - y=700 -->
+        <g class="node-group step" id="outfall" transform="translate(420, 700)" data-title="清水排放"
           data-text="处理好的干净水，终于可以回到小河里，鱼儿们好开心！">
           <rect x="0" y="0" width="160" height="80" rx="40" class="node-bg" style="stroke: #4caf50;" />
           <use href="#icon-river" x="48" y="8" width="64" height="64" />
           <text x="80" y="45" class="node-title" style="fill: #2e7d32;">回到小河</text>
         </g>
 
-        <!-- Sludge -->
-        <g class="node-group step" id="sludge" transform="translate(850, 640)" data-title="污泥处理"
+        <!-- Sludge - y=700 -->
+        <g class="node-group step" id="sludge" transform="translate(850, 700)" data-title="污泥处理"
           data-text="沉下来的泥巴被挤干水分，变成泥饼，运走做肥料或者填埋。">
           <rect x="0" y="0" width="160" height="80" rx="40" class="node-bg sludge-node" />
           <use href="#icon-sludge" x="48" y="8" width="64" height="64" />
