@@ -1,0 +1,325 @@
+:root {
+  /* 天空与背景 */
+  --bg-sky: #e0f7fa;
+  --bg-ground: #f1f8e9;
+
+  /* 面板颜色 */
+  --panel: #ffffff;
+  --text: #2c3e50;
+  --muted: #607d8b;
+
+  /* 流程颜色 - 更鲜艳 */
+  --primary: #039be5;
+  /* 水的主色 */
+  --primary-light: #b3e5fc;
+  --sludge: #795548;
+  /* 污泥 */
+  --sludge-light: #d7ccc8;
+
+  /* 节点背景 */
+  --node-bg: #ffffff;
+  --node-border: #0288d1;
+  --node-shadow: rgba(2, 136, 209, 0.2);
+
+  --shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+  --radius: 20px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(to bottom, var(--bg-sky) 0%, var(--bg-sky) 60%, var(--bg-ground) 60%, var(--bg-ground) 100%);
+  color: var(--text);
+  font-family: "Comic Sans MS", "Chalkboard SE", "Softbrush", sans-serif;
+  /* 尝试用一点可爱的字体，如果没有则回退 */
+}
+
+.app-header {
+  padding: 16px;
+  text-align: center;
+  background: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(4px);
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+.app-header h1 {
+  margin: 0;
+  font-size: 28px;
+  color: #0277bd;
+  text-shadow: 1px 1px 0 #fff;
+}
+
+.subtitle {
+  margin: 4px 0 0;
+  color: #546e7a;
+  font-size: 16px;
+}
+
+.app-main {
+  padding-top: 90px;
+  /* header height */
+  height: 100vh;
+  display: flex;
+  flex-direction: row;
+  overflow: hidden;
+}
+
+.sidebar {
+  width: 300px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  background: rgba(255, 255, 255, 0.8);
+  z-index: 10;
+}
+
+.controls {
+  display: flex;
+  gap: 12px;
+}
+
+.btn {
+  flex: 1;
+  border: none;
+  background: #fff;
+  color: var(--primary);
+  padding: 12px;
+  border-radius: var(--radius);
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  box-shadow: 0 4px 0 #b3e5fc;
+  transition: transform 0.1s;
+  border: 2px solid #b3e5fc;
+}
+
+.btn:active {
+  transform: translateY(4px);
+  box-shadow: none;
+}
+
+.btn.primary {
+  background: var(--primary);
+  color: #fff;
+  border-color: #0277bd;
+  box-shadow: 0 4px 0 #01579b;
+}
+
+.legend {
+  background: #fff;
+  padding: 16px;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+
+.legend h3 {
+  margin: 0 0 10px;
+  font-size: 18px;
+  color: #0277bd;
+}
+
+.legend-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+  font-size: 14px;
+}
+
+.chip {
+  width: 30px;
+  height: 12px;
+  border-radius: 6px;
+}
+
+.chip-water {
+  background: var(--primary);
+}
+
+.chip-sludge {
+  background: var(--sludge);
+}
+
+.chip-node {
+  background: #fff;
+  border: 2px solid var(--primary);
+}
+
+.info-panel {
+  flex: 1;
+  background: #fff;
+  border-radius: var(--radius);
+  padding: 20px;
+  box-shadow: var(--shadow);
+  border: 4px solid #b3e5fc;
+  position: relative;
+}
+
+.info-panel::before {
+  content: "💡";
+  position: absolute;
+  top: -15px;
+  left: 20px;
+  font-size: 32px;
+  background: #fff;
+  border-radius: 50%;
+  padding: 4px;
+}
+
+.info-panel h3 {
+  margin-top: 10px;
+  color: #0277bd;
+}
+
+.info-panel p {
+  line-height: 1.6;
+  font-size: 16px;
+}
+
+.diagram {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+  /* SVG pan/zoom if needed, but we'll fit to screen */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* SVG Styles */
+#flowSvg {
+  width: 100%;
+  height: 100%;
+  max-width: 1400px;
+}
+
+.node-group {
+  cursor: pointer;
+}
+
+/* .node-group:hover { transform: scale(1.05); }  <-- Removed to prevent overriding SVG translate */
+
+.node-bg {
+  fill: #fff;
+  stroke: var(--primary);
+  stroke-width: 3;
+  transition: all 0.2s ease;
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.1));
+}
+
+.node-group:hover .node-bg {
+  stroke: var(--primary-600);
+  stroke-width: 5;
+  filter: drop-shadow(0 8px 16px rgba(3, 155, 229, 0.3));
+  transform: scale(1.05);
+  /* Scale the background rect instead */
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.node-bg.sludge-node {
+  stroke: var(--sludge);
+}
+
+.node-title {
+  font-size: 14px;
+  font-weight: bold;
+  fill: #0277bd;
+  text-anchor: middle;
+  pointer-events: none;
+}
+
+/* Paths */
+.pipe-bg {
+  fill: none;
+  stroke: #cfd8dc;
+  stroke-width: 14;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.flow-line {
+  fill: none;
+  stroke: var(--primary);
+  stroke-width: 8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 15 10;
+  stroke-dashoffset: 0;
+  opacity: 0.8;
+}
+
+.sludge-line {
+  fill: none;
+  stroke: var(--sludge);
+  stroke-width: 8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 10 10;
+}
+
+/* Animations */
+@keyframes flowAnim {
+  to {
+    stroke-dashoffset: -25;
+  }
+}
+
+.playing .flow-line {
+  animation: flowAnim 1s linear infinite;
+}
+
+.playing .sludge-line {
+  animation: flowAnim 1.5s linear infinite;
+}
+
+.active .node-bg {
+  stroke: #ff9800;
+  stroke-width: 5;
+}
+
+/* Icons */
+.icon-path {
+  fill: none;
+  stroke: #0277bd;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.icon-fill {
+  fill: #b3e5fc;
+  stroke: none;
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+  .app-main {
+    flex-direction: column;
+    overflow-y: auto;
+    height: auto;
+  }
+
+  .sidebar {
+    width: 100%;
+    order: 2;
+  }
+
+  .diagram {
+    height: 600px;
+    order: 1;
+  }
+}
